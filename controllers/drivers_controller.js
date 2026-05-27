@@ -1,6 +1,26 @@
 const Driver = require('../models/Driver');
 
 module.exports = {
+  index(req, res, next) {
+    const { lng, lat } = req.query;
+
+    Driver.aggregate([
+      {
+        $geoNear: {
+          near: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
+          spherical: true,
+          maxDistance: 200000,
+          distanceField: 'dist'
+        }
+      }
+    ])
+      .then(drivers => {
+        const wrappedDrivers = drivers.map(driver => ({ obj: driver }));
+        res.send(wrappedDrivers);
+      })
+      .catch(next);
+  },
+
   create(req, res, next) {
     const driverProps = req.body;
 
