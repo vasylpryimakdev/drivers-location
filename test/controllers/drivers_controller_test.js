@@ -19,4 +19,31 @@ describe('Drivers controller', () => {
         });
     });
   });
+
+  it('Post to /api/drivers requires an email', (done) => {
+    request(app)
+      .post('/api/drivers')
+      .send({})
+      .end((err, res) => {
+        assert(res.body.error);
+        done();
+      });
+  });
+
+  it('Put to /api/drivers/id can update a record', done => {
+    const driver = new Driver({ email: 'test@test.com', driving: false });
+
+    driver.save().then(() => {
+      request(app)
+        .put(`/api/drivers/${driver._id}`)
+        .send({ driving: true })
+        .end(() => {
+          Driver.findOne({ email: 'test@test.com' })
+            .then(driver => {
+              assert(driver.driving === true);
+              done();
+            });
+        });
+    });
+  });
 });
